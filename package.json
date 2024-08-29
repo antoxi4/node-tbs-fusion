@@ -1,0 +1,23 @@
+{
+  "name": "node-tbs-fusion",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "copy": "scp -r /Users/antonyashyn/Documents/WORK/Radio/Code/SpyModuleNode/ pi@192.168.1.247:~/Documents/",
+    "copy-2": "scp -r /Users/antonyashyn/Documents/WORK/Radio/Code/SpyModuleNode/ pi@192.168.1.2:~/Documents/",
+    "cope": "scp -r pi@192.168.1.247:~/Documents/SpyModuleNode/test_picture.jpg /Users/antonyashyn/Documents/WORK/Radio/Code/SpyModuleNode/"
+  },
+  "author": "",
+  "raspberryWithElectricity": "ssh pi@192.168.1.247",
+  "raspberryWithoutElectricity": "ssh pi@192.168.1.2  ",
+  "license": "ISC",
+  "dependencies": {
+    "easy-crc": "^1.1.0",
+    "fluent-ffmpeg": "^2.1.3",
+    "serialport": "^12.0.0",
+    "uuid": "^10.0.0"
+  }
+}
