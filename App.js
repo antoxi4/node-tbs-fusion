@@ -73,15 +73,15 @@ class App {
   #checkActiveRecordFrequencyRssi = async () => {
     try {
       this.#stopCheckActiveRecordFrequencyRssi();
-      const result = await this.#scanService.getFrequencyRssi(this.#activeFrequencyRecording.frequency);
+      const result = await this.#scanService.getActiveFrequency();
 
-      console.log(`Check recording frequency: ${result.frequency}, with RSSI: ${result.rssi}`);
+      console.log(`Check recording frequency: ${result.frequency}, with RSSI: ${result.rssiA}`);
 
-      if (result.rssi < config.scan.minRssiForStopSession) {
+      if (result.rssiA < config.scan.minRssiForStopSession) {
         await this.#frequencyRecordService.stopRecord(this.#activeFrequencyRecording);
 
         this.#activeFrequencyRecording = null;
-        console.log(`Stopped recording frequency: ${result.frequency} with RSSI: ${result.rssi}`);
+        console.log(`Stopped recording frequency: ${result.frequency} with RSSI: ${result.rssiA}`);
         this.#scan();
       } else {
         this.#startCheckActiveRecordFrequencyRssi();

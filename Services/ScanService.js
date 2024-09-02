@@ -59,6 +59,10 @@ class ScanService {
     return scannedFrequencies[0]
   };
 
+  getActiveFrequency = async () => {
+    return this.#tbsService.getCurrentFrequencyRSSI();
+  };
+
   /**
    * @return {(number[])[]>}
    */
