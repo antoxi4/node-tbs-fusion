@@ -129,7 +129,7 @@ class App {
   #stopRecording = () => {
     return new Promise((resolve, reject) => {
       this.#ffmpeg.on('end', () => {
-        console.log('FFMPEG STOPPED');
+        console.log('Recording stopped');
         this.#ffmpeg = null;
         resolve();
       })
