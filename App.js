@@ -1,48 +1,46 @@
-const fs = require('fs');
-const path = require('path');
-const FfmpegCommand = require('fluent-ffmpeg');
 
 const config = require('./config')
-const { TBSAdapter, TBSService, RequestScanReceiver } = require('./TBS');
+const { ScanService } = require('./Services/ScanService');
+const { FrequencyRecordService, Record } = require('./Services/FrequencyRecordService');
 
 class App {
-  #tbsAdapter;
-  #tbsService;
-  #ffmpeg;
+  /**
+   * @type {Record | null}
+   */
+  #activeFrequencyRecording;
 
-  #availableFrequencies;
-  #activeSession;
-  #activeSessionCheckInterval;
-  #activeSessionRecording;
+  /**
+   * @type {ScanService}
+   */
+  #scanService;
+
+  /**
+   * @type {FrequencyRecordService}
+   */
+  #frequencyRecordService;
+
+  #checkActiveRecordFrequencyRssiTimeout;
 
   constructor() {
-    this.#activeSession = null;
-    
-    this.#tbsAdapter = new TBSAdapter({
-      address: config.tbsFussion.deviceAddress,
-      baudRate: config.tbsFussion.deviceBaudRate,
-      port: config.tbsFussion.devicePath,
-      rejectTimeoutInMs: 50000,
-      logging: false,
-    });
-    this.#tbsService = new TBSService(this.#tbsAdapter);
-
-    this.#availableFrequencies = this.#getAvailableFrequencies();
+    this.#checkActiveRecordFrequencyRssiTimeout = null;
+    this.#activeFrequencyRecording = null;
+    this.#scanService = new ScanService();
+    this.#frequencyRecordService = new FrequencyRecordService();
   }
 
   main = async () => {
-    this.#scan()
+    await this.#scan()
   };
 
   #scan = async () => {
     try {
-      const scannedFrequencies = await this.#scanFrequencies();
-      const bestFrequency = await this.#getBestFrequency(scannedFrequencies);
+      const frequencyForRecording = await this.#scanService.getFrequencyForCapture();
 
-      if (bestFrequency) {
-        this.#startFolowingFrequency(bestFrequency);
+      if (frequencyForRecording) {
+        console.log(`Suitable frequency found: ${frequencyForRecording.frequency} with RSSI: ${frequencyForRecording.rssi}`);
+        this.#startRecordingFrequency({ frequency: frequencyForRecording.frequency, rssi: frequencyForRecording.rssi });
       } else {
-        console.log('No best frequency found');
+        console.log('No suitable frequency found');
         this.#scan()
       }
     } catch (error) {
@@ -50,124 +48,48 @@ class App {
     }
   }
 
-  #startFolowingFrequency = async (bestFrequency) => {
-    this.#activeSession = this.#createSession(bestFrequency.frequency);
+  #startRecordingFrequency = async ({ frequency, rssi }) => {
+    await this.#scanService.setActiveFrequency(frequency);
 
-    await this.#tbsService.setFrequency(bestFrequency.frequency);
-    this.#recordVideo(this.#activeSession.videoPath);
-    this.#activeSessionCheckInterval = setInterval(this.#checkActiveSessionFrequencyRssi, 2000);
+    this.#activeFrequencyRecording = await this.#frequencyRecordService.startRecord(frequency);
 
-    console.log(`Started Following frequency: ${bestFrequency.frequency} with RSSI: ${bestFrequency.rssi}`);
+    console.log(`Started recording frequency: ${frequency} with RSSI: ${rssi}`);
+    this.#checkActiveRecordFrequencyRssi();
   }
 
-  #stopFollowingFrequency = async (sessionId) => {
-    clearInterval(this.#activeSessionCheckInterval);
-    this.#activeSessionCheckInterval = null;
+  #startCheckActiveRecordFrequencyRssi = () => {
+    this.#stopCheckActiveRecordFrequencyRssi();
 
-    const data = JSON.parse(fs.readFileSync(path.join(config.output.rootFolder, config.output.dataFile)));
-    const session = data.find((session) => session.sessionId === sessionId);
-
-    if (session) {
-      session.endTime = Date.now();
-      fs.writeFileSync(path.join(config.output.rootFolder, config.output.dataFile), JSON.stringify(data));
-    }
-
-    await this.#stopRecording();
-    this.#scan();
-  }
-
-  #checkActiveSessionFrequencyRssi = async () => {
-    const frequency = await this.#tbsService.getCurrentFrequencyRSSI();
-
-    console.log(`Following Frequency: ${frequency.frequency}, RSSI A: ${frequency.rssiA}, RSSI B: ${frequency.rssiB}`);
-
-    if (frequency.rssiA < config.scan.minRssiForStopSession || frequency.rssiB < config.scan.minRssiForStopSession) {
-      this.#stopFollowingFrequency(this.#activeSession.sessionId);
-    }
-  }
-
-  #createSession = (frequency) => {
-    const sessionId = Date.now();
-    const session = {
-      sessionId,
-      frequency,
-      startTime: sessionId,
-      endTime: null,
-      videoPath: path.join(config.output.rootFolder, config.output.videoFolder, `${sessionId}.avi`),
-    }
-
-    if (!fs.existsSync(path.resolve(config.output.rootFolder))) {
-      fs.mkdirSync(path.resolve(config.output.rootFolder));
-      fs.mkdirSync(path.join(config.output.rootFolder, config.output.videoFolder));
-      fs.writeFileSync(path.join(config.output.rootFolder, config.output.dataFile), JSON.stringify([]));
-    }
-
-    const data = JSON.parse(fs.readFileSync(path.join(config.output.rootFolder, config.output.dataFile)));
-
-    data.push(session);
-
-    fs.writeFileSync(path.join(config.output.rootFolder, config.output.dataFile), JSON.stringify(data));
-
-    return session
-  }
-
-  #recordVideo = (fileName) => {
-    return new Promise((resolve, reject) => {
-      this.#ffmpeg = new FfmpegCommand();
-      this.#ffmpeg.input(config.video.devicePath)
-        .save(fileName)
-        .on('start', () => {
-          resolve();
-        })
-        .on('error', (err, stdout, stderr) => {
-          console.log('Cannot process video: ' + err.message);
-          reject(err);
-        });
-    });
-  }
-
-  #stopRecording = () => {
-    return new Promise((resolve, reject) => {
-      this.#ffmpeg.on('end', () => {
-        console.log('Recording stopped');
-        this.#ffmpeg = null;
-        resolve();
-      })
-      this.#ffmpeg.ffmpegProc.stdin.write('q');
-    });
+    this.#checkActiveRecordFrequencyRssiTimeout = setTimeout(this.#checkActiveRecordFrequencyRssi, 6000);
   };
 
-  #getAvailableFrequencies = () => {
-    const frequencyAmount = Math.abs(config.scan.frequencyRange.start - config.scan.frequencyRange.end) / config.scan.frequencyStep;
-    const frequenciesToScan = new Array(frequencyAmount)
-      .fill(0)
-      .map((_, i) => config.scan.frequencyRange.start + i * config.scan.frequencyStep);
-    const chunkedFrequencies = []
-
-    for (let i = 0; i < frequenciesToScan.length; i += config.scan.frequenciesPerRequest) {
-      chunkedFrequencies.push(frequenciesToScan.slice(i, i + config.scan.frequenciesPerRequest));
+  #stopCheckActiveRecordFrequencyRssi = () => {
+    if (this.#checkActiveRecordFrequencyRssiTimeout != null) {
+      clearTimeout(this.#checkActiveRecordFrequencyRssiTimeout);
+      this.#checkActiveRecordFrequencyRssiTimeout = null;
     }
-
-    return chunkedFrequencies
   };
 
-  #scanFrequencies = async () => {
-    const responses = await Promise.all(this.#availableFrequencies.map((chunk) => this.#tbsService.scanFrequencies({
-      receiver: RequestScanReceiver.ab,
-      frequencyChangeDelayInMs: 40,
-      frequencies: chunk
-    })))
+  #checkActiveRecordFrequencyRssi = async () => {
+    try {
+      this.#stopCheckActiveRecordFrequencyRssi();
+      const result = await this.#scanService.getFrequencyRssi(this.#activeFrequencyRecording.frequency);
 
-    return responses.flat(Infinity);
-  };
+      console.log(`Check recording frequency: ${result.frequency}, with RSSI: ${result.rssi}`);
 
-  #getBestFrequency = async (frequencies) => {
-    const sortedFrequencies = frequencies
-      .filter((frequency) => frequency.rssi > config.scan.minRssiForStartSession)
-      .sort((a, b) => b.rssi - a.rssi);
+      if (result.rssi < config.scan.minRssiForStopSession) {
+        await this.#frequencyRecordService.stopRecord(this.#activeFrequencyRecording);
 
-    return sortedFrequencies.length > 0 ? sortedFrequencies[0] : null;
-  };
+        this.#activeFrequencyRecording = null;
+        console.log(`Stopped recording frequency: ${result.frequency} with RSSI: ${result.rssi}`);
+        this.#scan();
+      } else {
+        this.#startCheckActiveRecordFrequencyRssi();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }
 
 module.exports = { App };
