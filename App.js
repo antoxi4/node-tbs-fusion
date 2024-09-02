@@ -57,7 +57,7 @@ class App {
     this.#recordVideo(this.#activeSession.videoPath);
     this.#activeSessionCheckInterval = setInterval(this.#checkActiveSessionFrequencyRssi, 2000);
 
-    console.log(`Started Following frequency: ${bestFrequency.frequency} with RSSI A: ${bestFrequency.rssiA}, RSSI B: ${bestFrequency.rssiB}`);
+    console.log(`Started Following frequency: ${bestFrequency.frequency} with RSSI: ${bestFrequency.rssi}`);
   }
 
   #stopFollowingFrequency = async (sessionId) => {
@@ -79,7 +79,7 @@ class App {
   #checkActiveSessionFrequencyRssi = async () => {
     const frequency = await this.#tbsService.getCurrentFrequencyRSSI();
 
-    console.log(`Frequency: ${frequency.frequency}, RSSI A: ${frequency.rssiA}, RSSI B: ${frequency.rssiB}`);
+    console.log(`Following Frequency: ${frequency.frequency}, RSSI A: ${frequency.rssiA}, RSSI B: ${frequency.rssiB}`);
 
     if (frequency.rssiA < config.scan.minRssiForStopSession || frequency.rssiB < config.scan.minRssiForStopSession) {
       this.#stopFollowingFrequency(this.#activeSession.sessionId);
