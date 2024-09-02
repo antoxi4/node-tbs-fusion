@@ -3,3 +3,9 @@
 node_modules/
 npm-debug.log
 yarn-error.log
+
+#output files
+output/
+
+#config file
+config.js
