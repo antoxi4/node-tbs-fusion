@@ -53,7 +53,7 @@ class TBSService {
     const response = await this.#tbsAdapter.sendMessage(TBSMessageType.requestFreqAndRsi, requestData);
     const { messageData, isAcknowledge } = response;
 
-    if (!isAcknowledge) {
+    if (isAcknowledge) {
       throw new Error(`Failed to get frequency and RSSI with status code: ${response.acknowledgeStatusCode}`);
     }
 

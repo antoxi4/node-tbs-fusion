@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "copy": "scp -r /Users/antonyashyn/Documents/WORK/Radio/Code/SpyModuleNode/ pi@192.168.1.247:~/Documents/",
     "copy-2": "scp -r /Users/antonyashyn/Documents/WORK/Radio/Code/SpyModuleNode/ pi@192.168.1.2:~/Documents/",
-    "cope": "scp -r pi@192.168.1.247:~/Documents/SpyModuleNode/camera-recording.avi /Users/antonyashyn/Documents/WORK/Radio/Code/SpyModuleNode/"
+    "cope": "scp -r pi@192.168.1.247:~/Documents/SpyModuleNode/output /Users/antonyashyn/Documents/WORK/Radio/Code/SpyModuleNode/"
   },
   "author": "",
   "raspberryWithElectricity": "ssh pi@192.168.1.247",

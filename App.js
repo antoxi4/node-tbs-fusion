@@ -1,7 +1,9 @@
-const { TBSAdapter, TBSService, RequestScanReceiver } = require('./TBS');
+const fs = require('fs');
+const path = require('path');
 const FfmpegCommand = require('fluent-ffmpeg');
 
 const config = require('./config')
+const { TBSAdapter, TBSService, RequestScanReceiver } = require('./TBS');
 
 class App {
   #tbsAdapter;
@@ -9,36 +11,36 @@ class App {
   #ffmpeg;
 
   #availableFrequencies;
+  #activeSession;
+  #activeSessionCheckInterval;
+  #activeSessionRecording;
 
   constructor() {
-    this.#ffmpeg = new FfmpegCommand('/dev/video0');
-    // this.#tbsAdapter = new TBSAdapter({
-    //   address: config.tbsFussion.deviceAddress,
-    //   baudRate: config.tbsFussion.deviceBaudRate,
-    //   port: config.tbsFussion.devicePath,
-    //   rejectTimeoutInMs: 50000,
-    //   logging: false,
-    // });
-    // this.#tbsService = new TBSService(this.#tbsAdapter);
+    this.#activeSession = null;
+    
+    this.#tbsAdapter = new TBSAdapter({
+      address: config.tbsFussion.deviceAddress,
+      baudRate: config.tbsFussion.deviceBaudRate,
+      port: config.tbsFussion.devicePath,
+      rejectTimeoutInMs: 50000,
+      logging: false,
+    });
+    this.#tbsService = new TBSService(this.#tbsAdapter);
 
     this.#availableFrequencies = this.#getAvailableFrequencies();
   }
 
   main = async () => {
-    this.#recordVideo()
-    // this.#scan()
+    this.#scan()
   };
 
   #scan = async () => {
     try {
       const scannedFrequencies = await this.#scanFrequencies();
       const bestFrequency = await this.#getBestFrequency(scannedFrequencies);
-        
+
       if (bestFrequency) {
-        await this.#tbsService.setFrequency(bestFrequency.frequency);
-        console.log('Best frequency:', bestFrequency.frequency, 'setled');
-        this.#recordVideo()
-        
+        this.#startFolowingFrequency(bestFrequency);
       } else {
         console.log('No best frequency found');
         this.#scan()
@@ -48,36 +50,92 @@ class App {
     }
   }
 
-  #recordVideo = () => {
-    this.#ffmpeg.videoBitrate(1024)
-    // set target codec
-    // .videoCodec('divx')
-    // set aspect ratio
-    .aspect('16:9')
-    // set size in percent
-    .size('50%')
-    // set fps
-    .fps(24)
-    // set audio bitrate
-    // .audioBitrate('128k')
-    // set audio codec
-    // .audioCodec('libmp3lame')
-    // set number of audio channels
-    .audioChannels(2)
-    // set custom option
-    // .addOption('-vtag', 'DIVX')
-    // set output format to force
-    .format('avi')
-    // setup event handlers
-    .on('end', function() {
-      console.log('file has been converted succesfully');
-    })
-    .on('error', function(err) {
-      console.log('an error happened: ' + err.message);
-    })
-    // save to file
-    .save('camera-recording.avi');
+  #startFolowingFrequency = async (bestFrequency) => {
+    this.#activeSession = this.#createSession(bestFrequency.frequency);
+
+    await this.#tbsService.setFrequency(bestFrequency.frequency);
+    this.#recordVideo(this.#activeSession.videoPath);
+    this.#activeSessionCheckInterval = setInterval(this.#checkActiveSessionFrequencyRssi, 2000);
+
+    console.log(`Started Following frequency: ${bestFrequency.frequency} with RSSI A: ${bestFrequency.rssiA}, RSSI B: ${bestFrequency.rssiB}`);
   }
+
+  #stopFollowingFrequency = async (sessionId) => {
+    clearInterval(this.#activeSessionCheckInterval);
+    this.#activeSessionCheckInterval = null;
+
+    const data = JSON.parse(fs.readFileSync(path.join(config.output.rootFolder, config.output.dataFile)));
+    const session = data.find((session) => session.sessionId === sessionId);
+
+    if (session) {
+      session.endTime = Date.now();
+      fs.writeFileSync(path.join(config.output.rootFolder, config.output.dataFile), JSON.stringify(data));
+    }
+
+    await this.#stopRecording();
+    this.#scan();
+  }
+
+  #checkActiveSessionFrequencyRssi = async () => {
+    const frequency = await this.#tbsService.getCurrentFrequencyRSSI();
+
+    console.log(`Frequency: ${frequency.frequency}, RSSI A: ${frequency.rssiA}, RSSI B: ${frequency.rssiB}`);
+
+    if (frequency.rssiA < config.scan.minRssiForStopSession || frequency.rssiB < config.scan.minRssiForStopSession) {
+      this.#stopFollowingFrequency(this.#activeSession.sessionId);
+    }
+  }
+
+  #createSession = (frequency) => {
+    const sessionId = Date.now();
+    const session = {
+      sessionId,
+      frequency,
+      startTime: sessionId,
+      endTime: null,
+      videoPath: path.join(config.output.rootFolder, config.output.videoFolder, `${sessionId}.avi`),
+    }
+
+    if (!fs.existsSync(path.resolve(config.output.rootFolder))) {
+      fs.mkdirSync(path.resolve(config.output.rootFolder));
+      fs.mkdirSync(path.join(config.output.rootFolder, config.output.videoFolder));
+      fs.writeFileSync(path.join(config.output.rootFolder, config.output.dataFile), JSON.stringify([]));
+    }
+
+    const data = JSON.parse(fs.readFileSync(path.join(config.output.rootFolder, config.output.dataFile)));
+
+    data.push(session);
+
+    fs.writeFileSync(path.join(config.output.rootFolder, config.output.dataFile), JSON.stringify(data));
+
+    return session
+  }
+
+  #recordVideo = (fileName) => {
+    return new Promise((resolve, reject) => {
+      this.#ffmpeg = new FfmpegCommand();
+      this.#ffmpeg.input(config.video.devicePath)
+        .save(fileName)
+        .on('start', () => {
+          resolve();
+        })
+        .on('error', (err, stdout, stderr) => {
+          console.log('Cannot process video: ' + err.message);
+          reject(err);
+        });
+    });
+  }
+
+  #stopRecording = () => {
+    return new Promise((resolve, reject) => {
+      this.#ffmpeg.on('end', () => {
+        console.log('FFMPEG STOPPED');
+        this.#ffmpeg = null;
+        resolve();
+      })
+      this.#ffmpeg.ffmpegProc.stdin.write('q');
+    });
+  };
 
   #getAvailableFrequencies = () => {
     const frequencyAmount = Math.abs(config.scan.frequencyRange.start - config.scan.frequencyRange.end) / config.scan.frequencyStep;
@@ -105,7 +163,7 @@ class App {
 
   #getBestFrequency = async (frequencies) => {
     const sortedFrequencies = frequencies
-      .filter((frequency) => frequency.rssi > 50)
+      .filter((frequency) => frequency.rssi > config.scan.minRssiForStartSession)
       .sort((a, b) => b.rssi - a.rssi);
 
     return sortedFrequencies.length > 0 ? sortedFrequencies[0] : null;

@@ -8,10 +8,13 @@ module.exports = {
     devicePath: '/dev/video0'
   },
   output: {
-    dataFile: 'output/DB.json',
-    videoFolder: 'output/video',
+    rootFolder: './output',
+    dataFile: 'DB.json',
+    videoFolder: 'video',
   },
   scan: {
+    minRssiForStartSession: 50,
+    minRssiForStopSession: 30,
     frequencyRange: {
       start: 4900,
       end: 6200,
