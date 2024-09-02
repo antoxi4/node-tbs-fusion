@@ -5,11 +5,11 @@ module.exports = {
     deviceAddress: 1,
   },
   video: {
-    devicePath: '/dev/video0'
+    devicePath: '/dev/video0',
   },
   output: {
     rootFolder: './output',
-    dataFile: 'DB.json',
+    dataFile: 'Records.json',
     videoFolder: 'video',
   },
   scan: {
@@ -21,5 +21,6 @@ module.exports = {
     },
     frequencyStep: 10,
     frequenciesPerRequest: 40,
+    maxTimeForRecordFrequency: 60000, // 1 minute
   }
 }
