@@ -20,8 +20,10 @@ class App {
   #frequencyRecordService;
 
   #checkActiveRecordFrequencyRssiTimeout;
+  #maxRecordTimeout;
 
   constructor() {
+    this.#maxRecordTimeout = null;
     this.#checkActiveRecordFrequencyRssiTimeout = null;
     this.#activeFrequencyRecording = null;
     this.#scanService = new ScanService();
@@ -54,8 +56,36 @@ class App {
     this.#activeFrequencyRecording = await this.#frequencyRecordService.startRecord(frequency);
 
     console.log(`Started recording frequency: ${frequency} with RSSI: ${rssi}`);
+    this.#startRecordTimeout();
     this.#checkActiveRecordFrequencyRssi();
   }
+
+  #stopRecordingFrequency = async () => {
+    await this.#frequencyRecordService.stopRecord(this.#activeFrequencyRecording);
+
+    this.#activeFrequencyRecording = null;
+    console.log(`Stopped recording frequency: ${result.frequency} with RSSI: ${result.rssiA}`);
+    this.#scan();
+  };
+
+  #startRecordTimeout = () => {
+    this.#stopRecordTimeout();
+
+    this.#maxRecordTimeout = setTimeout(this.#onRecordTimeout, config.scan.maxTimeForRecordFrequency);
+  };
+
+  #onRecordTimeout = async () => {
+    this.#stopCheckActiveRecordFrequencyRssi();
+    this.#stopRecordTimeout();
+    await this.#stopRecordingFrequency();
+  };
+
+  #stopRecordTimeout = () => {
+    if (this.#maxRecordTimeout != null) {
+      clearTimeout(this.#maxRecordTimeout);
+      this.#maxRecordTimeout = null;
+    }
+  };
 
   #startCheckActiveRecordFrequencyRssi = () => {
     this.#stopCheckActiveRecordFrequencyRssi();
@@ -78,11 +108,7 @@ class App {
       console.log(`Check recording frequency: ${result.frequency}, with RSSI: ${result.rssiA}`);
 
       if (result.rssiA < config.scan.minRssiForStopSession) {
-        await this.#frequencyRecordService.stopRecord(this.#activeFrequencyRecording);
-
-        this.#activeFrequencyRecording = null;
-        console.log(`Stopped recording frequency: ${result.frequency} with RSSI: ${result.rssiA}`);
-        this.#scan();
+        await this.#stopRecordingFrequency();
       } else {
         this.#startCheckActiveRecordFrequencyRssi();
       }
