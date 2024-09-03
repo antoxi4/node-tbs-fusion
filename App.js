@@ -71,7 +71,7 @@ class App {
   #startRecordTimeout = () => {
     this.#stopRecordTimeout();
 
-    this.#maxRecordTimeout = setTimeout(this.#onRecordTimeout, config.scan.maxTimeForRecordFrequency);
+    this.#maxRecordTimeout = setTimeout(this.#onRecordTimeout, config.scan.maxTimeForRecordFrequencyInMs);
   };
 
   #onRecordTimeout = async () => {
