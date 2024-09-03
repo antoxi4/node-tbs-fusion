@@ -1,7 +1,7 @@
 module.exports = {
   tbsFussion: {
     devicePath: '/dev/ttyUSB0',
-    deviceBaudRate: 9600,
+    deviceBaudRate: 115200,
     deviceAddress: 1,
   },
   video: {
@@ -21,6 +21,6 @@ module.exports = {
     },
     frequencyStep: 10,
     frequenciesPerRequest: 40,
-    maxTimeForRecordFrequency: 60000, // 1 minute
+    maxTimeForRecordFrequencyInMs: 4000, // 4 seconds
   }
 }

@@ -61,10 +61,10 @@ class App {
   }
 
   #stopRecordingFrequency = async () => {
+    console.log(`Stop recording frequency: ${this.#activeFrequencyRecording?.frequency}`);
     await this.#frequencyRecordService.stopRecord(this.#activeFrequencyRecording);
 
     this.#activeFrequencyRecording = null;
-    console.log(`Stopped recording frequency: ${result.frequency} with RSSI: ${result.rssiA}`);
     this.#scan();
   };
 
@@ -75,6 +75,7 @@ class App {
   };
 
   #onRecordTimeout = async () => {
+    console.log("Frequency recording timeout")
     this.#stopCheckActiveRecordFrequencyRssi();
     this.#stopRecordTimeout();
     await this.#stopRecordingFrequency();
