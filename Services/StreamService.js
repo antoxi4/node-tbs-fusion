@@ -16,9 +16,10 @@ class StreamService {
 
     this.ffmpegStream = FfmpegCommand('/dev/video0')
       .noAudio()
-      .videoCodec('libx264')
-      .format('mp4')
-      // .outputOptions('-movflags frag_keyframe+empty_moov')
+      .addOption('-c:v', 'libx265')
+              .addOption('-movflags', 'faststart')
+              .addOption('-movflags', 'frag_keyframe+empty_moov')
+              .addOption('-f', 'mp4')
       .on('end', () => {
         console.log('Streaming finished');
       })
