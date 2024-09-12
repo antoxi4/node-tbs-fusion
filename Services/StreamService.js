@@ -86,7 +86,7 @@ class StreamService {
   
       const fileStream = fs.createReadStream(filePath, { start, end });
   
-      const ffmpegStream = ffmpeg(fileStream)
+      const ffmpegStream = FfmpegCommand(fileStream)
         // .noAudio()
         // .videoCodec('libx264')
         .format('mp4')
