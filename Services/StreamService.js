@@ -65,13 +65,13 @@ class StreamService {
       // "Accept-Ranges": "bytes",
     };
 
-    // res.writeHead(206, headers);
+    res.writeHead(206, headers);
 
     // const fileStream = fs.createReadStream(filePath, { start, end });
 
     
 
-    // ffmpegStream.pipe(res);
+    this.ffmpegStream.pipe(res);
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Not found');
   }
