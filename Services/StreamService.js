@@ -16,18 +16,18 @@ class StreamService {
 
     this.ffmpegStream = FfmpegCommand('/dev/video0') // See above article
     // Set input format (depends on OS, will not work if this isn't correct!)
-    .inputFormat('v4l2')
+    .inputFormat('mjpeg')
     // Set output format
-    .format('mp4')
+    // .format('mp4')
     // Set size
-    .size('640x480')
+    .size('1280x720')
     // Set FPS
-    .fps(24)
+    .fps(25)
     // Set video codec
-    .videoCodec('libx264')
+    .videoCodec('v4l2')
     // Record stream for 15sec
-    .duration('0:40')
-    .save('stream.mp4');
+    // .duration('0:40')
+    .save('stream.mkv');
   }
 
   requestHandler = (req, res) => {
