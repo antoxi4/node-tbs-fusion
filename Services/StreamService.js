@@ -14,19 +14,20 @@ class StreamService {
       console.info('Server start at: ', 3002)
     })
 
-    this.ffmpegStream = FfmpegCommand('/dev/video0')
-      .noAudio()
-      .addOption('-c:v', 'libx265')
-              .addOption('-movflags', 'faststart')
-              .addOption('-movflags', 'frag_keyframe+empty_moov')
-              .addOption('-f', 'mp4')
-      .on('end', () => {
-        console.log('Streaming finished');
-      })
-      .on('error', (err) => {
-        console.error(err);
-      })
-      .save('./stream.mp4');
+    this.ffmpegStream = FfmpegCommand('/dev/video0') // See above article
+    // Set input format (depends on OS, will not work if this isn't correct!)
+    .inputFormat('v4l2')
+    // Set output format
+    .format('mp4')
+    // Set size
+    // .size(SIZE)
+    // Set FPS
+    // .fps(FPS)
+    // Set video codec
+    .videoCodec('libx264')
+    // Record stream for 15sec
+    .duration('0:15')
+    .save('stream.mp4');
   }
 
   requestHandler = (req, res) => {
