@@ -89,7 +89,7 @@ class StreamService {
       const ffmpegStream = FfmpegCommand(fileStream)
         // .noAudio()
         // .videoCodec('libx264')
-        .format('mp4')
+        // .format('mp4')
         .outputOptions('-movflags frag_keyframe+empty_moov')
         .on('end', () => {
           console.log('Streaming finished');
