@@ -78,7 +78,7 @@ class FrequencyRecordService {
 
     this.#storeDataFile(data);
 
-    return this.#startRecordSession(record);
+    return config.video.capturingEnabled ? this.#startRecordVideo(record) : record;
   };
 
   /**
@@ -95,13 +95,13 @@ class FrequencyRecordService {
 
     this.#storeDataFile(data);
 
-    return this.#stopRecordSession(record);
+    return this.#stopRecordVideo(record);
   };
 
   /**
    * @param  {Record} record
    */
-  #startRecordSession = async (record) => {
+  #startRecordVideo = async (record) => {
     return new Promise((resolve, reject) => {
       record.ffmpegSession
         .input(config.video.devicePath)
@@ -118,7 +118,7 @@ class FrequencyRecordService {
   /**
    * @param  {Record} record
    */
-  #stopRecordSession = async (record) => {
+  #stopRecordVideo = async (record) => {
     return new Promise((resolve, reject) => {
       record.ffmpegSession.on('end', () => {
         resolve();

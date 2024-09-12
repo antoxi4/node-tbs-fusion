@@ -5,6 +5,7 @@ module.exports = {
     deviceAddress: 1,
   },
   video: {
+    capturingEnabled: true,
     devicePath: '/dev/video0',
   },
   output: {
