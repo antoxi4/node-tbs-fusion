@@ -16,16 +16,16 @@ class StreamService {
 
     this.ffmpegStream = FfmpegCommand('/dev/video0')
       .noAudio()
-      // .videoCodec('libx264')
-      // .format('mp4')
-      .outputOptions('-movflags frag_keyframe+empty_moov')
+      .videoCodec('libx264')
+      .format('mp4')
+      // .outputOptions('-movflags frag_keyframe+empty_moov')
       .on('end', () => {
         console.log('Streaming finished');
       })
       .on('error', (err) => {
         console.error(err);
       })
-      // .save('./stream.avi');
+      .save('./stream.mp4');
   }
 
   requestHandler = (req, res) => {
