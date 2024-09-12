@@ -23,7 +23,8 @@ class StreamService {
     // .format('mp4')
     // Set size
     .size('640x480')
-    .outputOptions('-movflags frag_keyframe+empty_moov')
+    .audioCodec('copy')
+    // .outputOptions('-movflags frag_keyframe+empty_moov')
     // .outputOptions('-preset veryfast')
     // .addOption('-movflags', 'frag_keyframe+empty_moov')
     // Set FPS
