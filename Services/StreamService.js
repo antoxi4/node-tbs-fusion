@@ -20,13 +20,13 @@ class StreamService {
     // Set output format
     .format('mp4')
     // Set size
-    // .size(SIZE)
+    .size('640x480')
     // Set FPS
     .fps(24)
     // Set video codec
     .videoCodec('libx264')
     // Record stream for 15sec
-    // .duration('0:15')
+    .duration('0:40')
     .save('stream.mp4');
   }
 
@@ -54,7 +54,9 @@ class StreamService {
     //   return;
     // }
 
-    // const range = req.headers.range;
+    const range = req.headers.range;
+
+    console.log('range', range);
     // const fileSize = stats.size;
     // const chunkSize = 1024 * 1024;
     // const start = Number(range.replace(/\D/g, ""));
