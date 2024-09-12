@@ -24,6 +24,7 @@ class StreamService {
     // .format('mp4')
     // Set size
     .size('1280x720')
+    .addOption('-movflags', 'frag_keyframe+empty_moov')
     // Set FPS
     .fps(25)
     // Set video codec
