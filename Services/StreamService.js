@@ -13,17 +13,16 @@ class StreamService {
     this.httpServer.on('listening', () => {
       console.info('Server start at: ', 3002)
     })
-
+    // ffmpeg -framerate 25 -video_size 640x480 -input_format mjpeg -i /dev/video0 -c copy ~/mjpeg.mp4
     this.ffmpegStream = FfmpegCommand('/dev/video0') // See above article
     // Set input format (depends on OS, will not work if this isn't correct!)
     .inputOptions([
-      '-f', 'v4l2',
       '-input_format', 'mjpeg'
     ])
     // Set output format
     // .format('mp4')
     // Set size
-    .size('1280x720')
+    .size('640x480')
     .outputOptions('-movflags frag_keyframe+empty_moov')
     // .outputOptions('-preset veryfast')
     // .addOption('-movflags', 'frag_keyframe+empty_moov')
