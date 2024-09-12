@@ -25,7 +25,7 @@ class StreamService {
     // Set size
     .size('1280x720')
     .outputOptions('-movflags frag_keyframe+empty_moov')
-    .outputOptions('-preset veryfast')
+    // .outputOptions('-preset veryfast')
     // .addOption('-movflags', 'frag_keyframe+empty_moov')
     // Set FPS
     .fps(25)
@@ -33,7 +33,7 @@ class StreamService {
     // .videoCodec('v4l2')
     // Record stream for 15sec
     // .duration('0:40')
-    .output('stream.mp4');
+    .save('stream.mp4');
   }
 
   requestHandler = (req, res) => {
