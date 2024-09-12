@@ -5,6 +5,7 @@ const FfmpegCommand = require('fluent-ffmpeg');
 
 class StreamService {
   httpServer
+  ffmpegStream
 
   constructor() {
     this.httpServer = http.createServer(this.requestHandler)
@@ -12,6 +13,19 @@ class StreamService {
     this.httpServer.on('listening', () => {
       console.info('Server start at: ', 3002)
     })
+
+    this.ffmpegStream = FfmpegCommand('/dev/video0')
+      .noAudio()
+      // .videoCodec('libx264')
+      // .format('mp4')
+      // .outputOptions('-movflags frag_keyframe+empty_moov')
+      .on('end', () => {
+        console.log('Streaming finished');
+      })
+      .on('error', (err) => {
+        console.error(err);
+      })
+      .save('./stream.avi');
   }
 
   requestHandler = (req, res) => {
@@ -55,18 +69,7 @@ class StreamService {
 
     // const fileStream = fs.createReadStream(filePath, { start, end });
 
-    const ffmpegStream = FfmpegCommand('/dev/video0')
-      .noAudio()
-      // .videoCodec('libx264')
-      // .format('mp4')
-      // .outputOptions('-movflags frag_keyframe+empty_moov')
-      .on('end', () => {
-        console.log('Streaming finished');
-      })
-      .on('error', (err) => {
-        console.error(err);
-      })
-      .save('./stream.avi');
+    
 
     // ffmpegStream.pipe(res);
     res.writeHead(404, { 'Content-Type': 'text/plain' });
