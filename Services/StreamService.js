@@ -22,7 +22,7 @@ class StreamService {
     // Set size
     // .size(SIZE)
     // Set FPS
-    // .fps(FPS)
+    .fps(24)
     // Set video codec
     .videoCodec('libx264')
     // Record stream for 15sec
