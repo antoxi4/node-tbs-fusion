@@ -25,7 +25,7 @@ class StreamService {
       .on('error', (err) => {
         console.error(err);
       })
-      .save('./stream.avi');
+      // .save('./stream.avi');
   }
 
   requestHandler = (req, res) => {
