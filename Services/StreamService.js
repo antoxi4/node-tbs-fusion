@@ -26,7 +26,7 @@ class StreamService {
     // Set video codec
     .videoCodec('libx264')
     // Record stream for 15sec
-    .duration('0:15')
+    // .duration('0:15')
     .save('stream.mp4');
   }
 
