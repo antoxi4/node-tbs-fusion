@@ -20,7 +20,7 @@ class StreamService {
       '-input_format', 'mjpeg'
     ])
     // Set output format
-    // .format('mp4')
+    .format('mp4')
     // Set size
     // .size('640x480')
     
