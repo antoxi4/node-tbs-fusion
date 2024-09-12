@@ -17,6 +17,8 @@ class StreamService {
     this.ffmpegStream = FfmpegCommand('/dev/video0') // See above article
     // Set input format (depends on OS, will not work if this isn't correct!)
     .inputOptions([
+      '-framerate', '25',
+      '-video_size', '640x480',
       '-input_format', 'mjpeg'
     ])
     // Set output format
@@ -28,7 +30,7 @@ class StreamService {
     // .outputOptions('-preset veryfast')
     // .addOption('-movflags', 'frag_keyframe+empty_moov')
     // Set FPS
-    .fps(25)
+    // .fps(25)
     // Set video codec
     // .videoCodec('v4l2')
     // Record stream for 15sec
