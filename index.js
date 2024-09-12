@@ -1,5 +1,8 @@
-const { App } = require('./App');
+// const { App } = require('./App');
+const { StreamService } = require('./Services/StreamService');
 
-const app = new App();
+// const app = new App();
 
-app.main();
+// app.main();
+
+const streamService = new StreamService();
