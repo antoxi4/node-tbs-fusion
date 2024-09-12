@@ -24,7 +24,8 @@ class StreamService {
     // Set FPS
     .fps(25)
     // Set video codec
-    .videoCodec('v4l2')
+    // .videoCodec('v4l2')
+    .outputOptions(['-f v4l2'])
     // Record stream for 15sec
     // .duration('0:40')
     .save('stream.mkv');
