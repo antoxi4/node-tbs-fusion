@@ -14,29 +14,29 @@ class StreamService {
       console.info('Server start at: ', 3002)
     })
     // ffmpeg -framerate 25 -video_size 640x480 -input_format mjpeg -i /dev/video0 -c copy ~/mjpeg.mp4
-    this.ffmpegStream = FfmpegCommand('/dev/video0') // See above article
-    // Set input format (depends on OS, will not work if this isn't correct!)
-    .inputOptions([
-      '-framerate', '25',
-      '-video_size', '640x480',
-      '-input_format', 'mjpeg'
-    ])
-    // Set output format
-    // .format('mp4')
-    // Set size
-    // .size('640x480')
+    // this.ffmpegStream = FfmpegCommand('/dev/video0') // See above article
+    // // Set input format (depends on OS, will not work if this isn't correct!)
+    // .inputOptions([
+    //   '-framerate', '25',
+    //   '-video_size', '640x480',
+    //   '-input_format', 'mjpeg'
+    // ])
+    // // Set output format
+    // // .format('mp4')
+    // // Set size
+    // // .size('640x480')
     
-    // .outputOptions('-movflags frag_keyframe+empty_moov')
-    // .outputOptions('-preset veryfast')
-    // .addOption('-movflags', 'frag_keyframe+empty_moov')
-    // Set FPS
-    // .fps(25)
-    // Set video codec
-    // .videoCodec('v4l2')
-    // Record stream for 15sec
-    // .duration('0:40')
-    .outputOptions(['-c copy'])
-    .save('stream.mp4');
+    // // .outputOptions('-movflags frag_keyframe+empty_moov')
+    // // .outputOptions('-preset veryfast')
+    // // .addOption('-movflags', 'frag_keyframe+empty_moov')
+    // // Set FPS
+    // // .fps(25)
+    // // Set video codec
+    // // .videoCodec('v4l2')
+    // // Record stream for 15sec
+    // // .duration('0:40')
+    // .outputOptions(['-c copy'])
+    // .save('stream.mp4');
   }
 
   requestHandler = (req, res) => {
