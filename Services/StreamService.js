@@ -72,8 +72,8 @@ class StreamService {
     
 
     this.ffmpegStream.pipe(res);
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not found');
+    // res.writeHead(404, { 'Content-Type': 'text/plain' });
+    // res.end('Not found');
   }
 
   videoPage = async (req, res) => {
