@@ -65,7 +65,7 @@ class FrequencyRecordService {
       startTime: recordId,
       endTime: null,
       videoPath: path.join(this.#videoFolderPath, `${recordId}.avi`),
-      ffmpegSession: new FfmpegCommand()
+      ffmpegSession: config.video.capturingEnabled ? new FfmpegCommand() : null,
     });
 
     data.push({
@@ -95,7 +95,7 @@ class FrequencyRecordService {
 
     this.#storeDataFile(data);
 
-    return this.#stopRecordVideo(record);
+    return config.video.capturingEnabled ? this.#stopRecordVideo(record) : record;
   };
 
   /**
@@ -121,7 +121,7 @@ class FrequencyRecordService {
   #stopRecordVideo = async (record) => {
     return new Promise((resolve, reject) => {
       record.ffmpegSession.on('end', () => {
-        resolve();
+        resolve(record);
       })
 
       try {
