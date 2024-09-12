@@ -24,14 +24,16 @@ class StreamService {
     // .format('mp4')
     // Set size
     .size('1280x720')
-    .addOption('-movflags', 'frag_keyframe+empty_moov')
+    .outputOptions('-movflags frag_keyframe+empty_moov')
+    .outputOptions('-preset veryfast')
+    // .addOption('-movflags', 'frag_keyframe+empty_moov')
     // Set FPS
     .fps(25)
     // Set video codec
     // .videoCodec('v4l2')
     // Record stream for 15sec
     // .duration('0:40')
-    .save('stream.mkv');
+    .output('stream.mp4');
   }
 
   requestHandler = (req, res) => {
