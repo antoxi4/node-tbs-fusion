@@ -51,25 +51,26 @@ class StreamService {
       // "Accept-Ranges": "bytes",
     };
 
-    res.writeHead(206, headers);
+    // res.writeHead(206, headers);
 
     // const fileStream = fs.createReadStream(filePath, { start, end });
 
     const ffmpegStream = FfmpegCommand('/dev/video0')
       .noAudio()
-      .videoCodec('libx264')
-      .format('mp4')
-      .outputOptions('-movflags frag_keyframe+empty_moov')
+      // .videoCodec('libx264')
+      // .format('mp4')
+      // .outputOptions('-movflags frag_keyframe+empty_moov')
       .on('end', () => {
         console.log('Streaming finished');
       })
       .on('error', (err) => {
         console.error(err);
-      });
+      })
+      .save('./stream.avi');
 
-    ffmpegStream.pipe(res);
-    // res.writeHead(404, { 'Content-Type': 'text/plain' });
-    // res.end('Not found');
+    // ffmpegStream.pipe(res);
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
   }
 
   videoPage = async (req, res) => {
