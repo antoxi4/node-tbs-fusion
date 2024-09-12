@@ -20,7 +20,7 @@ class StreamService {
       '-input_format', 'mjpeg'
     ])
     // Set output format
-    .format('mp4')
+    // .format('mp4')
     // Set size
     // .size('640x480')
     
@@ -54,37 +54,47 @@ class StreamService {
   }
 
   streamVideo = async (req, res) => {
-    // if (err) {
-    //   console.error(err);
-    //   res.writeHead(404, {'Content-Type': 'text/plain'});
-    //   res.end('File not found');
-    //   return;
-    // }
+    const filePath = 'stream.mp4';
 
-    const range = req.headers.range;
-
-    console.log('range', range);
-    // const fileSize = stats.size;
-    // const chunkSize = 1024 * 1024;
-    // const start = Number(range.replace(/\D/g, ""));
-    // const end = Math.min(start + chunkSize, fileSize - 1);
-
-    const headers = {
-      "Content-Type": "video/mp4",
-      // "Content-Length": end - start,
-      // "Content-Range": "bytes " + start + "-" + end + "/" + fileSize,
-      // "Accept-Ranges": "bytes",
-    };
-
-    res.writeHead(206, headers);
-
-    // const fileStream = fs.createReadStream(filePath, { start, end });
-
-    
-
-    this.ffmpegStream.pipe(res);
-    // res.writeHead(404, { 'Content-Type': 'text/plain' });
-    // res.end('Not found');
+    fs.stat(filePath, (err, stats) => {
+      if (err) {
+        console.error(err);
+        res.writeHead(404, {'Content-Type': 'text/plain'});
+        res.end('File not found');
+        return;
+      }
+  
+      const range = req.headers.range;
+      const fileSize = stats.size;
+      const chunkSize = 1024 * 1024;
+      const start = Number(range.replace(/\D/g, ""));
+      const end = Math.min(start + chunkSize, fileSize - 1);
+  
+      const headers = {
+        "Content-Type": "video/mp4",
+        "Content-Length": end - start,
+        "Content-Range": "bytes " + start + "-" + end + "/" + fileSize,
+        "Accept-Ranges": "bytes",
+      };
+  
+      res.writeHead(206, headers);
+  
+      const fileStream = fs.createReadStream(filePath, { start, end });
+  
+      // const ffmpegStream = ffmpeg(fileStream)
+      //   .noAudio()
+      //   .videoCodec('libx264')
+      //   .format('mp4')
+      //   .outputOptions('-movflags frag_keyframe+empty_moov')
+      //   .on('end', () => {
+      //     console.log('Streaming finished');
+      //   })
+      //   .on('error', (err) => {
+      //     console.error(err);
+      //   });
+  
+        fileStream.pipe(res);
+    });
   }
 
   videoPage = async (req, res) => {
