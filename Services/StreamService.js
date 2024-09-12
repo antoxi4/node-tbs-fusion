@@ -22,8 +22,8 @@ class StreamService {
     // Set output format
     // .format('mp4')
     // Set size
-    .size('640x480')
-    .audioCodec('copy')
+    // .size('640x480')
+    
     // .outputOptions('-movflags frag_keyframe+empty_moov')
     // .outputOptions('-preset veryfast')
     // .addOption('-movflags', 'frag_keyframe+empty_moov')
@@ -33,6 +33,7 @@ class StreamService {
     // .videoCodec('v4l2')
     // Record stream for 15sec
     // .duration('0:40')
+    .outputOptions(['-c copy'])
     .save('stream.mp4');
   }
 
