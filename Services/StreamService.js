@@ -31,12 +31,12 @@ class StreamService {
   }
 
   streamVideo = async (req, res) => {
-    if (err) {
-      console.error(err);
-      res.writeHead(404, {'Content-Type': 'text/plain'});
-      res.end('File not found');
-      return;
-    }
+    // if (err) {
+    //   console.error(err);
+    //   res.writeHead(404, {'Content-Type': 'text/plain'});
+    //   res.end('File not found');
+    //   return;
+    // }
 
     // const range = req.headers.range;
     // const fileSize = stats.size;
