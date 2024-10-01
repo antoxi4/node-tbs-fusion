@@ -1,6 +1,6 @@
 
 const config = require('../config')
-const { TBSAdapter, TBSService, RequestScanReceiver } = require('../TBS');
+const { TBSService, RequestScanReceiver } = require('../TBS');
 
 class ScanService {
   /**
@@ -9,25 +9,13 @@ class ScanService {
   #scaningFrequencies = [];
   /** 
    * TBS Adapter instance
-   * @type { TBSAdapter }
-   */
-  #tbsAdapter;
-  /** 
-   * TBS Adapter instance
    * @type { TBSService }
    */
   #tbsService;
 
-  constructor() {
+  constructor(tbsService) {
     this.#scaningFrequencies = this.#getScanningFrequencies();
-    this.#tbsAdapter = new TBSAdapter({
-      address: config.tbsFussion.deviceAddress,
-      baudRate: config.tbsFussion.deviceBaudRate,
-      port: config.tbsFussion.devicePath,
-      rejectTimeoutInMs: 50000,
-      logging: false,
-    });
-    this.#tbsService = new TBSService(this.#tbsAdapter);
+    this.#tbsService = tbsService
   }
 
   setActiveFrequency = async (frequency) => {

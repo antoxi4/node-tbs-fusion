@@ -23,5 +23,8 @@ module.exports = {
     frequencyStep: 10,
     frequenciesPerRequest: 40,
     maxTimeForRecordFrequencyInMs: 4000, // 4 seconds
+  },
+  server: {
+    port: 3000,
   }
 }
